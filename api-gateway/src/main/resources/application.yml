@@ -8,7 +8,7 @@ spring:
   application:
     name: API-GATEWAY
   zipkin:
-    base-url: http://127.0.0.1:9411/
+    base-url: http://zipkin:9411/
   cloud:
     gateway:
       enabled: true
@@ -47,10 +47,14 @@ resilience4j:
         registerHealthIndicator: true
 
 eureka:
+  instance:
+    prefer-ip-address: true
+    hostname: eureka-0
   client:
     register-with-eureka: true
+    fetch-registry: true
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://eureka-0.eureka.default.svc.cluster.local:8761/eureka
     
 management:
   endpoints:

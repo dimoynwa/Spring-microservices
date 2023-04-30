@@ -1,7 +1,10 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.0.5'
+	id 'org.springframework.boot' version '3.0.6'
 	id 'io.spring.dependency-management' version '1.1.0'
+	id 'com.palantir.docker' version '0.35.0'
+	id 'com.palantir.docker-run' version "0.35.0"
+	
 }
 
 group = 'io.dimo'
@@ -22,7 +25,6 @@ repositories {
 ext {
   set('springCloudVersion', "2022.0.2")
 }
-
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
@@ -46,6 +48,22 @@ dependencyManagement {
 		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
 		mavenBom "io.micrometer:micrometer-bom:1.10.4"
 	}
+}
+
+docker {
+    name "dimoynwa/${project.name}:${project.version}"
+    copySpec.from("build").into("build")
+    
+    tag 'latest', 'dimoynwa/${project.name}:${project.version}'
+    dockerfile project.file('Dockerfile')
+    push true
+}
+
+dockerRun {
+    name project.name
+    image "dimoynwa/${project.name}:${project.version}"
+    ports '8021:8021'
+    clean true
 }
 
 tasks.named('test') {

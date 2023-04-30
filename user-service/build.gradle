@@ -1,12 +1,15 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.0.5'
+	id 'org.springframework.boot' version '3.0.6'
 	id 'io.spring.dependency-management' version '1.1.0'
+	id 'com.palantir.docker' version '0.35.0'
+	id 'com.palantir.docker-run' version '0.35.0'
+	
 }
 
 group = 'io.dimo'
 version = '0.0.1'
-sourceCompatibility = '20'
+sourceCompatibility = '17'
 
 configurations {
 	compileOnly {
@@ -28,7 +31,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-	implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer''
+	implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
 	
 	implementation 'io.micrometer:micrometer-observation'
 	implementation 'io.micrometer:micrometer-tracing-bridge-brave'
@@ -46,6 +49,22 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'io.projectreactor:reactor-test'
+}
+
+docker {
+    name "dimoynwa/${project.name}:${project.version}"
+    copySpec.from("build").into("build")
+    
+    tag 'latest', 'dimoynwa/${project.name}:${project.version}'
+    dockerfile project.file('Dockerfile')
+    push true
+}
+
+dockerRun {
+    name project.name
+    image "dimoynwa/${project.name}:${project.version}"
+    ports '8022:8022'
+    clean true
 }
 
 dependencyManagement {
