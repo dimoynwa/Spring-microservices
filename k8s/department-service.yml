@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: department-service-cm
+data:
+  eureka_url: http://eureka-0.eureka.default.svc.cluster.local:8761
+  zipkin_url: http://zipkin:9411
+  eureka_hostname: eureka-0
+  redis_host: redis
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: department-service-app
+  labels:
+    app: department-service-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: department-service-app
+  template:
+    metadata:
+      labels:
+        app: department-service-app
+    spec:
+      containers:
+      - name: department-service-app
+        image: dimoynwa/department-service:0.0.2
+        imagePullPolicy: Always
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8021
+        env:
+          - name: EUREKA_URL
+            valueFrom:
+              configMapKeyRef:
+                name: department-service-cm
+                key: eureka_url
+          - name: ZIPKIN_URL
+            valueFrom:
+              configMapKeyRef:
+                name: department-service-cm
+                key: zipkin_url
+          - name: EUREKA_HOSTNAME
+            valueFrom:
+              configMapKeyRef:
+                name: department-service-cm
+                key: eureka_hostname
+          - name: REDIS_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: user-service-cm
+                key: redis_host
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: department-service-svc
+spec:
+  selector:
+    app: department-service-app
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8021
+

@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-gateway-cm
+data:
+  eureka_url: http://eureka-0.eureka:8761
+  zipkin_url: http://zipkin:9411
+  eureka_hostname: eureka-0
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway-app
+  labels:
+    app: api-gateway-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-gateway-app
+  template:
+    metadata:
+      labels:
+        app: api-gateway-app
+    spec:
+      containers:
+      - name: api-gateway-app
+        image: dimoynwa/api-gateway:0.0.2
+        imagePullPolicy: Always
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8888
+        env:
+          - name: EUREKA_URL
+            valueFrom:
+              configMapKeyRef:
+                name: api-gateway-cm
+                key: eureka_url
+          - name: ZIPKIN_URL
+            valueFrom:
+              configMapKeyRef:
+                name: api-gateway-cm
+                key: zipkin_url
+          - name: EUREKA_HOSTNAME
+            valueFrom:
+              configMapKeyRef:
+                name: api-gateway-cm
+                key: eureka_hostname
+          
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway-svc
+spec:
+  selector:
+    app: api-gateway-app
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8888
+

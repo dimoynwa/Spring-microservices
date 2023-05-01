@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-service-cm
+data:
+  eureka_url: http://eureka-0.eureka.default.svc.cluster.local:8761
+  zipkin_url: http://zipkin:9411
+  eureka_hostname: eureka-0
+  redis_host: redis
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service-app
+  labels:
+    app: user-service-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-service-app
+  template:
+    metadata:
+      labels:
+        app: user-service-app
+    spec:
+      containers:
+      - name: user-service-app
+        image: dimoynwa/user-service:0.0.2
+        imagePullPolicy: Always
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8022
+        env:
+          - name: EUREKA_URL
+            valueFrom:
+              configMapKeyRef:
+                name: user-service-cm
+                key: eureka_url
+          - name: ZIPKIN_URL
+            valueFrom:
+              configMapKeyRef:
+                name: user-service-cm
+                key: zipkin_url
+          - name: EUREKA_HOSTNAME
+            valueFrom:
+              configMapKeyRef:
+                name: user-service-cm
+                key: eureka_hostname
+          - name: REDIS_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: user-service-cm
+                key: redis_host
+        
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service-svc
+spec:
+  selector:
+    app: user-service-app
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8022
+
