@@ -32,16 +32,15 @@ public class UserRepository {
         return hashOperations.values(KEY);
     }
 
-    public Mono<Void> save(User user) {
+    public Mono<User> save(User user) {
     	if (!StringUtils.hasLength(user.getFirstName()) || !StringUtils.hasLength(user.getEmail()) 
     			|| !StringUtils.hasLength(user.getDepartamentId())) {
-    		return Mono.error(new IllegalArgumentException("Cannot be saved: user first name, email and department ID are required, but one or both is empty."))
-    				.then();
+    		return Mono.error(new IllegalArgumentException("Cannot be saved: user first name, email and department ID are required, but one or both is empty."));
     	}
     	
     	String id = UUID.randomUUID().toString();
     	user.setId(id);
-    	return hashOperations.put(KEY, id, user).then();
+    	return hashOperations.put(KEY, id, user).thenReturn(user);
     }
     
     public Mono<Void> deleteById(String id) {

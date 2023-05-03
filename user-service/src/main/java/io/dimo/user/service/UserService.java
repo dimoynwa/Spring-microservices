@@ -21,17 +21,19 @@ public class UserService {
 	
 	public Flux<UserDepartment> getAllUsers() {
 		return userRepository.findAll()
+				.doOnEach(userSignal -> log.info("User found in DB: {}", userSignal.get()))
 				.flatMap(this::enrichUser);
 	}
 	
 	public Mono<UserDepartment> getUserById(String id) {
 		log.info("Get user by id: ", id);
 		return userRepository.findById(id)
+				.doOnEach(userSignal -> log.info("User found in DB: {}", userSignal.get()))
 				.switchIfEmpty(Mono.error(new UserNotFoundException(id)))
 				.flatMap(this::enrichUser);
 	}
 
-	public Mono<Void> createUser(User user) {
+	public Mono<User> createUser(User user) {
 		return userRepository.save(user);
 	}
 	

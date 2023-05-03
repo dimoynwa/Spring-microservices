@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'io.dimo'
-version = '0.0.2'
+version = '0.0.3'
 sourceCompatibility = '17'
 
 configurations {
@@ -55,7 +55,11 @@ docker {
     name "dimoynwa/${project.name}:${project.version}"
     copySpec.from("build").into("build")
     
-    tag 'latest', 'dimoynwa/${project.name}:${project.version}'
+    tag "-${version}", "dimoynwa/${project.name}:${version}"
+  	tag "-latest", "dimoynwa/${project.name}:latest"
+  	
+  	// gradlew clean build docker dockerTagsPush
+  	
     dockerfile project.file('Dockerfile')
     push true
 }

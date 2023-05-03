@@ -43,9 +43,7 @@ public class UserRoutesConfiguration {
         Mono<User> userMono = request.bodyToMono(User.class);
         return userMono.flatMap(user -> {
         	// Save the object to the database
-            Mono<Void> result = userService.createUser(user);
-            // Return NO_CONTENT status if the object is saved successfully
-            return ServerResponse.noContent().build(result);
+            return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(userService.createUser(user), User.class);
         });
     }
 	
